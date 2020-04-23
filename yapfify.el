@@ -39,7 +39,7 @@
 
 (require 'cl-lib)
 
-(defcustom yapfify-executable "yapf"
+(defcustom yapfify-executable "autopep8"
   "Executable used to start yapf."
   :type 'string
   :group 'yapfify)
@@ -49,11 +49,20 @@
 
 Return the exit code.  START-LINE and END-LINE specify region to
 format."
-  (with-current-buffer input-buffer
-    (call-process-region (point-min) (point-max)
-                         yapfify-executable nil output-buffer
-                         nil "-l" (concat (number-to-string start-line) "-"
-                                           (number-to-string end-line)))))
+  (if (string-equal yapfify-executable "yapf")
+      (with-current-buffer input-buffer
+        (call-process-region (point-min) (point-max)
+                             yapfify-executable nil output-buffer
+                             nil "-l" (concat (number-to-string start-line) "-"
+                                              (number-to-string end-line))))
+    ;; autopep8
+    (with-current-buffer input-buffer
+        (call-process-region (point-min) (point-max)
+                             yapfify-executable nil output-buffer
+                             nil "--line-range"
+                             (number-to-string start-line)
+                             (number-to-string end-line)
+                             "-"))))
 
 (defun get-buffer-string (buffer)
   "Return the contents of BUFFER."
